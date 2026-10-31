@@ -1,0 +1,39 @@
+name: Build Dawn theme workspace
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project repository
+        uses: actions/checkout@v4
+
+      - name: Check out official Shopify Dawn
+        uses: actions/checkout@v4
+        with:
+          repository: Shopify/dawn
+          ref: main
+          path: dawn
+
+      - name: Package Dawn theme source
+        run: |
+          test -f dawn/layout/theme.liquid
+          mkdir -p dist
+          cd dawn
+          zip -qr ../dist/dawn-theme-source.zip . -x '.git/*'
+
+      - name: Upload theme source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dawn-theme-source
+          path: dist/dawn-theme-source.zip
+          if-no-files-found: error
+          retention-days: 7
